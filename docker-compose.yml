@@ -1,0 +1,96 @@
+services:
+  fastapi:
+    build: ./fastapi
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    depends_on:
+      creature_server:
+        condition: service_healthy
+      spell_server:
+        condition: service_healthy
+      defence_server:
+        condition: service_healthy
+    environment:
+      DB_creature_HOST: creature_server
+      DB_creature_PORT: 3306
+      DB_creature_NAME: appdb
+      DB_creature_USER: appuser
+      DB_creature_PASSWORD: apppassword
+      DB_spell_HOST: spell_server
+      DB_spell_PORT: 3306
+      DB_spell_NAME: appdb
+      DB_spell_USER: appuser
+      DB_spell_PASSWORD: apppassword
+      DB_defence_HOST: defence_server
+      DB_defence_PORT: 3306
+      DB_defence_NAME: appdb
+      DB_defence_USER: appuser
+      DB_defence_PASSWORD: apppassword
+
+  creature_server:
+    image: mysql:8.4
+    container_name: creature_server
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3320:3306"
+    volumes:
+      - creature_data:/var/lib/mysql
+      - ./mysql/creature_init.sql:/docker-entrypoint-initdb.d/creature_init.sql
+    healthcheck:
+      test: [ "CMD", "mysql", "-h", "127.0.0.1", "-P", "3306", "-u", "root", "-prootpassword","-e", "SELECT 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  spell_server:
+    image: mysql:8.4
+    container_name: spell_server
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3321:3306"
+    volumes:
+      - spell_data:/var/lib/mysql
+      - ./mysql/spell_init.sql:/docker-entrypoint-initdb.d/spell_init.sql
+    healthcheck:
+      test: [ "CMD", "mysql", "-h", "127.0.0.1", "-P", "3306", "-u", "root", "-prootpassword","-e", "SELECT 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+
+
+  defence_server:
+    image: mysql:8.4
+    container_name: defence_server
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3322:3306"
+    volumes:
+      - defence_data:/var/lib/mysql
+      - ./mysql/defence_init.sql:/docker-entrypoint-initdb.d/defence_init.sql
+    healthcheck:
+      test: [ "CMD", "mysql", "-h", "127.0.0.1", "-P", "3306", "-u", "root", "-prootpassword","-e", "SELECT 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+volumes:
+  creature_data:
+  spell_data:
+  defence_data:
